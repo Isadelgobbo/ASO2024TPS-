@@ -1,0 +1,392 @@
+1. Adivina el número
+#!/bin/bash
+
+# Adivina el Número
+# Este script genera un número aleatorio entre 1 y 100 y permite al usuario 
+# intentar adivinarlo, proporcionando pistas si el intento es demasiado alto o bajo.
+
+# Generar un número aleatorio entre 1 y 100
+numero_secreto=$(( RANDOM % 100 + 1 ))
+
+# Inicializar la variable de intento del usuario
+intento=0
+
+# Función para proporcionar pistas al usuario
+proporcionar_pista() {
+    if [ $1 -lt $numero_secreto ]; then
+        echo "Demasiado bajo. Intenta otra vez."
+    elif [ $1 -gt $numero_secreto ]; then
+        echo "Demasiado alto. Intenta otra vez."
+    fi
+}
+
+# Bucle principal para adivinar el número
+while true; do
+    # Leer el intento del usuario
+    read -p "Adivina el número (entre 1 y 100): " intento
+
+    # Verificar si el intento es un número válido
+    if ! [[ "$intento" =~ ^[0-9]+$ ]]; then
+        echo "Por favor, introduce un número válido."
+        continue
+    fi
+
+    # Convertir el intento a un número entero
+    intento=$(( intento ))
+
+    # Proporcionar pistas o felicitar al usuario si adivina correctamente
+    if [ $intento -eq $numero_secreto ]; then
+        echo "¡Felicidades! Adivinaste el número correcto: $numero_secreto"
+        break
+    else
+        proporcionar_pista $intento
+    fi
+done
+
+2. Piedra. Papel o Tijeras
+#!/bin/bash
+
+# Piedra, Papel o Tijeras: Un juego simple contra la computadora
+# El script solicita la elección del usuario, genera una elección aleatoria para la computadora,
+# y determina el ganador.
+
+# Función para obtener la elección aleatoria de la computadora
+get_computer_choice() {
+    choices=("piedra" "papel" "tijeras")
+    random_index=$((RANDOM % 3))
+    echo "${choices[$random_index]}"
+}
+
+# Función para determinar el ganador
+determine_winner() {
+    user_choice=$1
+    computer_choice=$2
+
+    if [ "$user_choice" == "$computer_choice" ]; then
+        echo "Empate! Ambos eligieron $user_choice."
+    elif [ "$user_choice" == "piedra" ] && [ "$computer_choice" == "tijeras" ]; then
+        echo "Ganaste! Piedra aplasta tijeras."
+    elif [ "$user_choice" == "papel" ] && [ "$computer_choice" == "piedra" ]; then
+        echo "Ganaste! Papel envuelve piedra."
+    elif [ "$user_choice" == "tijeras" ] && [ "$computer_choice" == "papel" ]; then
+        echo "Ganaste! Tijeras cortan papel."
+    else
+        echo "Perdiste! $computer_choice gana contra $user_choice."
+    fi
+}
+
+# Solicitar la elección del usuario
+echo "Elige una opción: piedra, papel o tijeras"
+read user_choice
+
+# Validar la elección del usuario
+if [[ "$user_choice" != "piedra" && "$user_choice" != "papel" && "$user_choice" != "tijeras" ]]; then
+    echo "Opción no válida. Por favor elige piedra, papel o tijeras."
+    exit 1
+fi
+
+# Obtener la elección de la computadora
+computer_choice=$(get_computer_choice)
+
+# Mostrar la elección de la computadora
+echo "La computadora eligió: $computer_choice"
+
+# Determinar el ganador
+determine_winner "$user_choice" "$computer_choice"
+
+3. Calculadora Simple
+#!/bin/bash
+
+# Calculadora Simple en Bash
+
+# Función para mostrar el menú de operaciones
+mostrar_menu() {
+    echo "Seleccione la operación que desea realizar:"
+    echo "1. Suma"
+    echo "2. Resta"
+    echo "3. Multiplicación"
+    echo "4. División"
+    echo "5. Salir"
+}
+
+# Función para realizar la suma
+suma() {
+    resultado=$(echo "$1 + $2" | bc)
+    echo "El resultado de $1 + $2 es: $resultado"
+}
+
+# Función para realizar la resta
+resta() {
+    resultado=$(echo "$1 - $2" | bc)
+    echo "El resultado de $1 - $2 es: $resultado"
+}
+
+# Función para realizar la multiplicación
+multiplicacion() {
+    resultado=$(echo "$1 * $2" | bc)
+    echo "El resultado de $1 * $2 es: $resultado"
+}
+
+# Función para realizar la división
+division() {
+    if [ "$2" -eq 0 ]; then
+        echo "Error: División por cero no permitida."
+    else
+        resultado=$(echo "scale=2; $1 / $2" | bc)
+        echo "El resultado de $1 / $2 es: $resultado"
+    fi
+}
+
+# Bucle principal
+while true; do
+    # Pedir al usuario los dos números
+    read -p "Ingrese el primer número: " num1
+    read -p "Ingrese el segundo número: " num2
+
+    # Mostrar el menú de operaciones
+    mostrar_menu
+    read -p "Seleccione una opción (1-5): " opcion
+
+    case $opcion in
+        1)
+            suma $num1 $num2
+            ;;
+        2)
+            resta $num1 $num2
+            ;;
+        3)
+            multiplicacion $num1 $num2
+            ;;
+        4)
+            division $num1 $num2
+            ;;
+        5)
+            echo "Saliendo..."
+            break
+            ;;
+        *)
+            echo "Opción no válida. Por favor, seleccione una opción del 1 al 5."
+            ;;
+    esac
+
+    echo # Línea en blanco para separar las operaciones
+done
+mostrar_menu: Función que muestra el menú de operaciones disponibles.
+suma: Función que realiza la suma de dos números.
+resta: Función que realiza la resta de dos números.
+multiplicación: Función que realiza la multiplicación de dos números.
+division: Función que realiza la división de dos números, con una verificación para evitar la división por cero.
+Bucle principal: Solicita al usuario los dos números y la operación que desea realizar, y luego muestra el resultado. El bucle continúa hasta que el usuario elige salir seleccionando la opción 5.
+
+4. Contador de Palabras
+#!/bin/bash
+
+# Contador de Palabras: Este script lee un archivo de texto y cuenta el
+# número de palabras, líneas y caracteres en el archivo.
+
+# Verifica si se ha proporcionado un archivo como argumento
+if [ "$#" -ne 1 ]; then
+    echo "Uso: $0 <archivo>"
+    exit 1
+fi
+
+# Asigna el primer argumento a la variable FILE
+FILE=$1
+
+# Verifica si el archivo existe
+if [ ! -f "$FILE" ]; then
+    echo "El archivo '$FILE' no existe."
+    exit 1
+fi
+
+# Cuenta el número de palabras, líneas y caracteres usando el comando 'wc'
+# 'wc' es un comando de Unix que significa "word count" (conteo de palabras)
+word_count=$(wc -w < "$FILE")
+line_count=$(wc -l < "$FILE")
+char_count=$(wc -m < "$FILE")
+
+# Imprime los resultados
+echo "Archivo: $FILE"
+echo "Número de palabras: $word_count"
+echo "Número de líneas: $line_count"
+echo "Número de caracteres: $char_count"
+Verificación de argumentos: El script primero verifica si se ha proporcionado exactamente un argumento (el nombre del archivo).
+Asignación de variables: Asigna el nombre del archivo proporcionado a la variable .FILE
+Verificación de existencia del archivo: Comprueba si el archivo existe.
+Uso del comando wc: Utiliza el comando para contar palabras (), líneas () y caracteres ().wc-w-l-m
+Impresión de resultados: Muestra los resultados en la terminal.
+
+5. Cronómetro
+#!/bin/bash
+
+# Cronómetro: Un script que actúa como un cronómetro.
+# Permite al usuario iniciar, detener y reiniciar el cronómetro,
+# mostrando el tiempo transcurrido en segundos.
+
+# Variables globales
+start_time=0
+end_time=0
+running=false
+
+# Función para iniciar el cronómetro
+start() {
+    if $running; then
+        echo "El cronómetro ya está en marcha."
+    else
+        start_time=$(date +%s)
+        running=true
+        echo "Cronómetro iniciado."
+    fi
+}
+
+# Función para detener el cronómetro
+stop() {
+    if $running; then
+        end_time=$(date +%s)
+        running=false
+        elapsed_time=$((end_time - start_time))
+        echo "Cronómetro detenido. Tiempo transcurrido: $elapsed_time segundos."
+    else
+        echo "El cronómetro no está en marcha."
+    fi
+}
+
+# Función para reiniciar el cronómetro
+reset() {
+    start_time=0
+    end_time=0
+    running=false
+    echo "Cronómetro reiniciado."
+}
+
+# Función para mostrar el menú de opciones
+show_menu() {
+    echo "Seleccione una opción:"
+    echo "1. Iniciar cronómetro"
+    echo "2. Detener cronómetro"
+    echo "3. Reiniciar cronómetro"
+    echo "4. Salir"
+}
+
+# Bucle principal para manejar las opciones del usuario
+while true; do
+    show_menu
+    read -p "Opción: " option
+    case $option in
+        1)
+            start
+            ;;
+        2)
+            stop
+            ;;
+        3)
+            reset
+            ;;
+        4)
+            echo "Saliendo..."
+            break
+            ;;
+        *)
+            echo "Opción no válida. Por favor, seleccione una opción del 1 al 4."
+            ;;
+    esac
+done
+Este script Bash actúa como un cronómetro simple. Permite al usuario iniciar, detener y reiniciar el cronómetro, mostrando el tiempo transcurrido en segundos. El script utiliza un bucle para mostrar un menú de opciones y manejar la entrada del usuario. Las funciones , , y se encargan de las operaciones del cronómetro.whilestartstopreset
+6. Usar la API de weatherapi.com para obtener el clima actual de una ciudad.
+#!/bin/bash
+
+# Este script usa la API de weatherapi.com para obtener el clima actual de una ciudad específica.
+
+# Asegúrate de tener `curl` instalado en tu sistema antes de ejecutar este script.
+# Puedes instalarlo usando: sudo apt-get install curl
+
+# API Key de weatherapi.com (reemplaza con tu propia API Key)
+API_KEY="tu_api_key_aqui"
+
+# Ciudad para la cual deseas obtener el clima
+CIUDAD="Madrid"
+
+# URL de la API de weatherapi.com
+URL="http://api.weatherapi.com/v1/current.json?key=${API_KEY}&q=${CIUDAD}&aqi=no"
+
+# Realizar la solicitud a la API y almacenar la respuesta en una variable
+RESPUESTA=$(curl -s "${URL}")
+
+# Verificar si la solicitud fue exitosa
+if [ $? -ne 0 ]; then
+  echo "Error al realizar la solicitud a la API."
+  exit 1
+fi
+
+# Extraer información relevante de la respuesta usando `jq`
+# Asegúrate de tener `jq` instalado en tu sistema antes de ejecutar este script.
+# Puedes instalarlo usando: sudo apt-get install jq
+
+# Extraer el nombre de la ciudad
+NOMBRE_CIUDAD=$(echo "${RESPUESTA}" | jq -r '.location.name')
+
+# Extraer la temperatura actual en grados Celsius
+TEMP_C=$(echo "${RESPUESTA}" | jq -r '.current.temp_c')
+
+# Extraer la condición climática actual
+CONDICION=$(echo "${RESPUESTA}" | jq -r '.current.condition.text')
+
+# Mostrar la información obtenida
+echo "Clima actual en ${NOMBRE_CIUDAD}:"
+echo "Temperatura: ${TEMP_C}°C"
+echo "Condición: ${CONDICION}"
+
+# Fin del script
+
+7. Mostrar el género de un nombre ingresado por el usuario, usando la API del sitio
+ https://api.agify.io/?name=nombre.
+#!/bin/bash
+
+# Solicitar el nombre al usuario
+read -p "Introduce un nombre: " nombre
+
+# Realizar la solicitud a la API de Agify.io para obtener la edad estimada
+respuesta=$(curl -s "https://api.agify.io/?name=${nombre}")
+
+# Verificar si la solicitud fue exitosa
+if [ $? -ne 0 ]; then
+    echo "Error al conectarse a la API"
+    exit 1
+fi
+
+# Obtener el género de la respuesta usando jq
+edad=$(echo $respuesta | jq -r '.age')
+
+# Verificar si se obtuvo una respuesta válida
+if [ "$edad" == "null" ]; then
+    echo "No se pudo determinar la edad para el nombre: $nombre"
+else
+    echo "La edad estimada para el nombre $nombre es $edad"
+fi
+
+8. Mostrar la edad probable de un nombre ingresado por el usuario, usando la API del
+ sitio https://api.genderize.io/?name=nombre
+#!/bin/bash
+
+# Solicitar el nombre al usuario
+read -p "Introduce un nombre: " nombre
+
+# Realizar la solicitud a la API de Genderize.io para obtener el género estimado
+respuesta=$(curl -s "https://api.genderize.io/?name=${nombre}")
+
+# Verificar si la solicitud fue exitosa
+if [ $? -ne 0 ]; then
+    echo "Error al conectarse a la API"
+    exit 1
+fi
+
+# Obtener el género y la probabilidad de la respuesta usando jq
+genero=$(echo $respuesta | jq -r '.gender')
+probabilidad=$(echo $respuesta | jq -r '.probability')
+
+# Verificar si se obtuvo una respuesta válida
+if [ "$genero" == "null" ]; then
+    echo "No se pudo determinar el género para el nombre: $nombre"
+else
+    echo "El género probable para el nombre $nombre es $genero con una probabilidad de $probabilidad"
+fi
