@@ -10,64 +10,195 @@ c) Ejecutar el archivo suma_rasta.py unas 10 veces, luego descomentar
 (borrar el #) las líneas 11,12,19 y 20 guardarlo y ejecutarlo otras 10 
 veces. ¿Qué pasó? ¿Por qué?
 al principio el resultado siempre era 0 pero tardaba distintos segundos y cuando borré el #, daba distintos resultados y en distintos segundos.
-2. A-
+c.
+import time
 import threading
 
-NUMBER_OF_THREADS = 5  # Número de comensales
-CANTIDAD_INICIAL_HAMBURGUESAS = 20
-cantidad_restante_hamburguesas = CANTIDAD_INICIAL_HAMBURGUESAS
-mutex = threading.Lock()
+acumulador = 0
+rango = 100000
 
-def obtener_hamburguesa(comensal):
-    global cantidad_restante_hamburguesas
-    while True:
-        with mutex:
-            if cantidad_restante_hamburguesas > 0:
-                print(f"Comensal {comensal} obtiene la hamburguesa {cantidad_restante_hamburguesas}")
-                cantidad_restante_hamburguesas -= 1
-            else:
-                print("SE TERMINARON LAS HAMBURGUESAS :(")
-                return
+def sumador():
+    global acumulador
+    for x in range(rango):
+        a = acumulador + 5
+        for i in range(1000):
+            pass
+        acumulador = a
 
-def main():
-    hilos = []
-    for i in range(NUMBER_OF_THREADS):
-        hilo = threading.Thread(target=obtener_hamburguesa, args=(i,))
-        hilos.append(hilo)
-        hilo.start()
+def restador():
+    global acumulador
+    for x in range(rango):
+        a = acumulador - 5
+        for i in range(1000):
+            pass
+        acumulador = a
 
-    for hilo in hilos:
-        hilo.join()
+momento_arranque = time.perf_counter()
+thr1 = threading.Thread(target=sumador)
+thr2 = threading.Thread(target=restador)
 
-if __name__ == "__main__":
-    main()
-b. import threading
+thr1.start()
+thr2.start()
 
-NUMBER_OF_THREADS = 2  # Número de comensales
-CANTIDAD_INICIAL_HAMBURGUESAS = 8
-cantidad_restante_hamburguesas = CANTIDAD_INICIAL_HAMBURGUESAS
-mutex = threading.Lock()
+thr1.join()
+thr2.join()
 
-def obtener_hamburguesa(comensal):
-    global cantidad_restante_hamburguesas
-    while True:
-        with mutex:
-            if cantidad_restante_hamburguesas > 0:
-                print(f"Comensal {comensal} obtiene la hamburguesa {cantidad_restante_hamburguesas}")
-                cantidad_restante_hamburguesas -= 1
-            else:
-                print("SE TERMINARON LAS HAMBURGUESAS :(")
-                return
+momento_parada = time.perf_counter()
 
-def main():
-    hilos = []
-    for i in range(NUMBER_OF_THREADS):
-        hilo = threading.Thread(target=obtener_hamburguesa, args=(i,))
-        hilos.append(hilo)
-        hilo.start()
+print(f'El valor final es: {acumulador}')
+print(f'Tomó {momento_parada - momento_arranque:0.5f} segundos')
+Los resultados de ejecutar el archivo 10 veces sin modificar fueron:
+(500000, 4.6637 segundos)
+(500000, 4.8198 segundos)
+(214060, 4.9417 segundos)
+(500000, 4.9833 segundos)
+(419055, 5.2072 segundos)
+(333980, 5.1235 segundos)
+(-73035, 4.9739 segundos)
+(351910, 5.0163 segundos)
+(180280, 4.5245 segundos)
+(500000, 4.5167 segundos)
+el valor final del acumulador varía, lo que indica una condición de carrera (race condition). Esto se debe a que los hilos suma y resta están accediendo y modificando la variable acumulador simultáneamente sin ninguna sincronización, lo que provoca resultados no deterministas.
+Los resultados de ejecutar el archivo 10 veces después de descomentar las líneas 11, 12, 19 y 20 fueron:
+(135295, 4.4861 segundos)
+(73760, 4.9052 segundos)
+(-101885, 5.0039 segundos)
+(-101405, 4.6544 segundos)
+(320, 5.0765 segundos)
+(19050, 4.3245 segundos)
+(179605, 4.3806 segundos)
+(196000, 4.7433 segundos)
+(-22485, 4.4309 segundos)
+(101760, 5.0090 segundos)
+Los resultados son inconsistentes, variando ampliamente entre -73035 y 500000.
+Esto se debe a la condición de carrera, ya que los hilos suma y resta modifican el acumulador simultáneamente sin ninguna sincronización.
+Los resultados siguen siendo inconsistentes, aunque el rango de variación es diferente.
+La introducción del lock para sincronizar el acceso a acumulador debería haber evitado las condiciones de carrera, sin embargo, los resultados indican que aún hay inconsistencias.
+El uso de lock reduce las condiciones de carrera, pero en este caso, debido a la naturaleza del problema y la estructura del código, aún vemos variabilidad en los resultados. Esta variabilidad puede requerir una revisión más profunda del código para garantizar resultados deterministas. ​
 
-    for hilo in hilos:
-        hilo.join()
+2. Burger Robot es una empresa multinacional de Software que se especializa 
+en modelados de situaciones de empresas, en especial hamburgueserías, 
+están teniendo problemas con un algoritmo para repartir las hamburguesas 
+de forma equitativa entre los comensales.  
+Como su equipo de expertos no pudo resolver este enigma, llamaron a un 
+Hacker Ruso, el señor BinaryBorinsky78, este sr, escribía sus códigos con un 
+sistema de encriptación muy particular, ponía las líneas de código 
+importantes, mezcladas y en un documento comentado aparte.  
+Pero ese no fue el problema, sino que no armo el algoritmo antes de que se 
+lo llevara la Interpol.
+A- Tu tarea será colocar las líneas de código en los lugares adecuados para 
+poder resolver el problema de las hamburguesas de distribución 
+equitativa.
+#include <pthread.h>
+#include <stdio.h>
+#include <stdlib.h>
 
-if __name__ == "__main__":
-    main()
+#define NUMBER_OF_THREADS 2
+#define CANTIDAD_INICIAL_HAMBURGUESAS 20
+
+int cantidad_restante_hamburguesas = CANTIDAD_INICIAL_HAMBURGUESAS;
+int turno = 0;
+
+void *comer_hamburguesa(void *tid)
+{
+    while (1)
+    { 
+        while (turno != (int)tid); // Esperar hasta que sea el turno del hilo actual
+
+        // INICIO DE LA ZONA CRÍTICA
+        if (cantidad_restante_hamburguesas > 0)
+        {
+            printf("Hola! soy el hilo(comensal) %d, me voy a comer una hamburguesa! Ya que todavía quedan %d\n", (int)tid, cantidad_restante_hamburguesas);
+            cantidad_restante_hamburguesas--; // Me como una hamburguesa
+        }
+        else
+        {
+            printf("SE TERMINARON LAS HAMBURGUESAS :(\n");
+            pthread_exit(NULL); // Forzar terminación del hilo
+        }
+        // SALIDA DE LA ZONA CRÍTICA   
+turno = (turno + 1) % NUMBER_OF_THREADS; // Pasar el turno al siguiente hilo
+    }
+}
+
+int main(int argc, char *argv[])
+{
+    pthread_t threads[NUMBER_OF_THREADS];
+    int status, i, ret;
+
+    for (i = 0; i < NUMBER_OF_THREADS; i++)
+    {
+        printf("Hola!, soy el hilo principal. Estoy creando el hilo %d\n", i);
+        status = pthread_create(&threads[i], NULL, comer_hamburguesa, (void *)i);
+        if (status != 0)
+        {
+            printf("Algo salió mal, al crear el hilo recibí el código de error %d\n", status);
+            exit(-1);
+        }
+    }
+
+    for (i = 0; i < NUMBER_OF_THREADS; i++)
+    {
+        void *retval;
+        ret = pthread_join(threads[i], &retval); // Esperar por la terminación de los hilos que creé
+    }
+    pthread_exit(NULL); // Como los hilos que creé ya terminaron de ejecutarse, termino yo también.
+}
+
+b. Viendo la figura 2-22, como sería para el problema de las hamburguesas 
+con 2 comensales y 8 hamburgesas.
+#include <pthread.h>
+#include <stdio.h>
+#include <stdlib.h>
+
+#define NUMBER_OF_THREADS 2
+#define CANTIDAD_INICIAL_HAMBURGUESAS 8
+
+int cantidad_restante_hamburguesas = CANTIDAD_INICIAL_HAMBURGUESAS;
+int turno = 0;
+
+void *comer_hamburguesa(void *tid)
+{
+    while (1)
+    { 
+        while (turno != (int)tid); // Esperar hasta que sea el turno del hilo actual
+
+        // INICIO DE LA ZONA CRÍTICA
+        if (cantidad_restante_hamburguesas > 0)
+        {
+            printf("Hola! soy el hilo(comensal) %d, me voy a comer una hamburguesa! Ya que todavía quedan %d\n", (int)tid, cantidad_restante_hamburguesas);
+            cantidad_restante_hamburguesas--; // Me como una hamburguesa
+        }
+        else
+        {
+            printf("SE TERMINARON LAS HAMBURGUESAS :(\n");
+            pthread_exit(NULL); // Forzar terminación del hilo
+        }
+        // SALIDA DE LA ZONA CRÍTICA   
+
+        turno = (turno + 1) % NUMBER_OF_THREADS; // Pasar el turno al siguiente hilo
+    }
+}
+int main(int argc, char *argv[])
+{
+    pthread_t threads[NUMBER_OF_THREADS];
+    int status, i, ret;
+
+    for (i = 0; i < NUMBER_OF_THREADS; i++)
+    {
+        printf("Hola!, soy el hilo principal. Estoy creando el hilo %d\n", i);
+        status = pthread_create(&threads[i], NULL, comer_hamburguesa, (void *)i);
+        if (status != 0)
+        {
+            printf("Algo salió mal, al crear el hilo recibí el código de error %d\n", status);
+            exit(-1);
+        }
+    }
+
+    for (i = 0; i < NUMBER_OF_THREADS; i++)
+    {
+        void *retval;
+        ret = pthread_join(threads[i], &retval); // Esperar por la terminación de los hilos que creé
+    }
+    pthread_exit(NULL); // Como los hilos que creé ya terminaron de ejecutarse, termino yo también.
+}
