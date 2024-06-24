@@ -10,7 +10,6 @@ c) Ejecutar el archivo suma_rasta.py unas 10 veces, luego descomentar
 (borrar el #) las líneas 11,12,19 y 20 guardarlo y ejecutarlo otras 10 
 veces. ¿Qué pasó? ¿Por qué?
 al principio el resultado siempre era 0 pero tardaba distintos segundos y cuando borré el #, daba distintos resultados y en distintos segundos.
-c.
 import time
 import threading
 
