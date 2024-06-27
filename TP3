@@ -9,7 +9,9 @@ no, no son iguales, tenemos distintos tiempos de ejecución
 c) Ejecutar el archivo suma_rasta.py unas 10 veces, luego descomentar 
 (borrar el #) las líneas 11,12,19 y 20 guardarlo y ejecutarlo otras 10 
 veces. ¿Qué pasó? ¿Por qué?
-al principio el resultado siempre era 0 pero tardaba distintos segundos y cuando borré el #, daba distintos resultados y en distintos segundos.
+el codigo comentado y sin comentar, cometen race condicion. en el comentado como los dos hilos estan utilizando
+un recurso compartido (zona critica) sin limites, y en el descomentado primero entra un hilo y se queda en bucle y despues
+entra el otro y eso genera un error.
 import time
 import threading
 
