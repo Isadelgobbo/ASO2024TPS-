@@ -1,0 +1,75 @@
+#!/bin/bash
+
+# Cronómetro: Un script que actúa como un cronómetro.
+# Permite al usuario iniciar, detener y reiniciar el cronómetro,
+# mostrando el tiempo transcurrido en segundos.
+
+# Variables globales
+start_time=0
+end_time=0
+running=false
+
+# Función para iniciar el cronómetro
+start() {
+    if $running; then
+        echo "El cronómetro ya está en marcha."
+    else
+        start_time=$(date +%s)
+        running=true
+        echo "Cronómetro iniciado."
+    fi
+}
+
+# Función para detener el cronómetro
+stop() {
+    if $running; then
+        end_time=$(date +%s)
+        running=false
+        elapsed_time=$((end_time - start_time))
+        echo "Cronómetro detenido. Tiempo transcurrido: $elapsed_time segundos."
+    else
+        echo "El cronómetro no está en marcha."
+    fi
+}
+
+# Función para reiniciar el cronómetro
+reset() {
+    start_time=0
+    end_time=0
+    running=false
+    echo "Cronómetro reiniciado."
+}
+
+# Función para mostrar el menú de opciones
+show_menu() {
+    echo "Seleccione una opción:"
+    echo "1. Iniciar cronómetro"
+    echo "2. Detener cronómetro"
+    echo "3. Reiniciar cronómetro"
+    echo "4. Salir"
+}
+
+# Bucle principal para manejar las opciones del usuario
+while true; do
+    show_menu
+    read -p "Opción: " option
+    case $option in
+        1)
+            start
+            ;;
+        2)
+            stop
+            ;;
+        3)
+            reset
+            ;;
+        4)
+            echo "Saliendo..."
+            break
+            ;;
+        *)
+            echo "Opción no válida. Por favor, seleccione una opción del 1 al 4."
+            ;;
+    esac
+done
+Este script Bash actúa como un cronómetro simple. Permite al usuario iniciar, detener y reiniciar el cronómetro, mostrando el tiempo transcurrido en segundos. El script utiliza un bucle para mostrar un menú de opciones y manejar la entrada del usuario. Las funciones , , y se encargan de las operaciones del cronómetro.whilestartstopreset
